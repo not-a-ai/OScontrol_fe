@@ -120,7 +120,17 @@ const CreateOrEditOS = () => {
       {/* Conteúdo Principal */}
       <div className="container mx-auto py-8 px-4">
         <Card className="p-4">
-          <h2 className="text-xl font-semibold mb-4">Cadastrar/Editar Ordem de Serviço</h2>
+          <div className="flex justify-between">
+            <h2 className="text-xl font-semibold mb-4">Cadastrar/Editar Ordem de Serviço</h2>
+
+            {/* Botão de Cancelar (X) */}
+            <Button
+              onClick={handleCancel}
+              className=" bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-lg"
+            >
+              <X className="w-6 h-6 text-white" />
+            </Button>
+          </div>
 
           {/* Descrição */}
           <div className="mb-4">
@@ -306,13 +316,6 @@ const CreateOrEditOS = () => {
             Salvar Ordem de Serviço
           </Button>
         </Card>
-        {/* Botão de Cancelar (X) */}
-        <Button
-          onClick={handleCancel}
-          className="fixed top-24 right-6 bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-lg z-10"
-        >
-          <X className="w-6 h-6 text-white" />
-        </Button>
       </div>
     </div>
   );

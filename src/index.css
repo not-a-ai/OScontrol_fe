@@ -8,15 +8,31 @@
 @layer base {
   :root {
     --color-blue: #10375c;
+    --color-blue-h: #0c2a47;
     --color-orange: #eb8317;
+    --color-orange-h: #cf730f;
   }
 }
 
 @theme {
   --color-blue: #10375c;
+  --color-blue-h: #0c2a47;
   --color-orange: #eb8317;
+  --color-orage-h: #cf730f;
 }
 
+.bg-primary {
+  background-color: var(--color-blue);
+}
+.hover\:bg-primary-hover:hover {
+  background-color: var(--color-blue-h);
+}
+.bg-secondary {
+  background-color: var(--color-orange);
+}
+.hover\:bg-secondary-hover:hover {
+  background-color: var(--color-orange-h);
+}
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

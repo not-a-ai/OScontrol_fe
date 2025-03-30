@@ -8,12 +8,8 @@ const config: Config = {
   ],
   plugins: [],
   theme: {
-    extend: {
-      colors: {
-        primary: 'var(--color-blue)',
-        secondary: 'var(--color-orange)',
-      },
-    },
+    extend: {},
   },
 };
+
 export default config;

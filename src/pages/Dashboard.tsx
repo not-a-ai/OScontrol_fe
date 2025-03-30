@@ -4,6 +4,8 @@ import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ListaOS from '../components/ListaOS';
 import Header from '../components/Header';
+import { useState } from 'react';
+import GenericModal from '@/components/ModalGeneric';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,20 +14,110 @@ const Dashboard = () => {
     navigate('/os');
   };
 
+  // Estados para controlar a abertura dos modais
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [fields, setFields] = useState<{ label: string; type: string; name: string }[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  const [submitData, setSubmitData] = useState<Function>(() => () => {});
+
+  // Função para abrir o modal com os campos e título certos
+  const openModal = (
+    title: string,
+    modalFields: { label: string; type: string; name: string }[],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    onSubmit: Function,
+  ) => {
+    setModalTitle(title);
+    setFields(modalFields);
+    setSubmitData(() => onSubmit);
+    setIsModalOpen(true);
+  };
+
+  // Funções de submissão para cada tipo
+  const handleSubmitTécnico = (data: Record<string, string>) => {
+    console.log('Dados do Técnico:', data);
+    // Aqui você pode fazer o envio dos dados para a API ou algo mais
+    setIsModalOpen(false);
+  };
+
+  const handleSubmitServiço = (data: Record<string, string>) => {
+    console.log('Dados do Serviço:', data);
+    // Envio para a API ou lógica para o serviço
+    setIsModalOpen(false);
+  };
+
+  const handleSubmitCliente = (data: Record<string, string>) => {
+    console.log('Dados do Cliente:', data);
+    // Envio para a API ou lógica para o cliente
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
       <Header userName="Maria Oliveira" userImage="https://i.pravatar.cc/150?img=3" />
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-center gap-4 mb-6">
-          <Button variant="default" className="bg-orange hover:bg-orange/80">
+          {/* Botões para abrir os modais */}
+          <Button
+            variant="secondary"
+            onClick={() =>
+              openModal(
+                'Cadastrar Técnico',
+                [
+                  { label: 'Nome', type: 'text', name: 'nome' },
+                  { label: 'E-mail', type: 'email', name: 'email' },
+                ],
+                handleSubmitTécnico,
+              )
+            }
+          >
             Cadastrar Técnico
           </Button>
-          <Button variant="default" className="bg-orange hover:bg-orange/80">
-            Cadastrar Clientes
+
+          <Button
+            variant="secondary"
+            onClick={() =>
+              openModal(
+                'Cadastrar Serviço',
+                [
+                  { label: 'Nome', type: 'text', name: 'nome' },
+                  { label: 'Descrição', type: 'text', name: 'descricao' },
+                  { label: 'Preço Base', type: 'number', name: 'preco' },
+                ],
+                handleSubmitServiço,
+              )
+            }
+          >
+            Cadastrar Serviço
           </Button>
-          <Button variant="default" className="bg-orange hover:bg-orange/80">
-            Cadastrar Serviços
+
+          <Button
+            variant="secondary"
+            onClick={() =>
+              openModal(
+                'Cadastrar Cliente',
+                [
+                  { label: 'Nome', type: 'text', name: 'nome' },
+                  { label: 'Telefone', type: 'text', name: 'telefone' },
+                  { label: 'E-mail', type: 'email', name: 'email' },
+                  { label: 'Endereço', type: 'text', name: 'endereco' },
+                ],
+                handleSubmitCliente,
+              )
+            }
+          >
+            Cadastrar Cliente
           </Button>
+
+          {/* Modal Genérico */}
+          <GenericModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title={modalTitle}
+            fields={fields}
+            onSubmit={(data) => submitData(data)}
+          />
         </div>
 
         <Card className="p-4">
