@@ -1,12 +1,35 @@
+import { login } from '@/services/authService';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState<string>('');
+  const [senha, setSenha] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login feito com:', email, password);
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log(email, senha);
+      const data = await login(email, senha);
+      console.log('Login realizado com sucesso:', data);
+
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Erro ao realizar login. Verifique suas credenciais.');
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,16 +50,17 @@ function Login() {
         <input
           type="password"
           placeholder="Senha"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <button
           type="submit"
-          className="w-full p-2 bg-orange-400 text-white rounded hover:bg-blue-700 transition-colors"
+          className="w-full p-2 bg-orange-400 text-white rounded hover:bg-amber-700 transition-colors"
         >
-          Entrar
+          {loading ? 'Carregando...' : 'Entrar'}
         </button>
+        {error && <p className=" text-red-700 text-center">{error}</p>}
       </form>
     </div>
   );
