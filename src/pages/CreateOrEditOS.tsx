@@ -115,7 +115,7 @@ const CreateOrEditOS = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
-      <Header userName="Maria Oliveira" userImage="https://i.pravatar.cc/150?img=3" />
+      <Header />
 
       {/* Conteúdo Principal */}
       <div className="container mx-auto py-8 px-4">

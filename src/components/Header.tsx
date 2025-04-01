@@ -1,21 +1,39 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useNavigate } from 'react-router-dom';
+import { Button } from './ui/button';
+import { LogOut } from 'lucide-react';
+import { useUser } from '@/services/UserContext';
 
-interface HeaderProps {
-  userName: string;
-  userImage: string;
-}
+const Header = () => {
+  const navigate = useNavigate();
+  const { user, isLoading } = useUser();
 
-const Header = ({ userName, userImage }: HeaderProps) => {
+  if (isLoading) {
+    return <div>Carregando...</div>;
+  }
+
+  const userName = user?.nome || 'Usuário';
+  const userImage = '/src/assets/avatar.png';
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
+  };
+
   return (
     <header className="bg-blue text-white p-4 flex items-center justify-between shadow-md">
-      <h1 className="text-lg font-bold">Painel de Ordens de Serviço</h1>
       <div className="flex items-center gap-3">
-        <span>{userName}</span>
         <Avatar>
           <AvatarImage src={userImage} alt={userName} />
           <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
         </Avatar>
+        <span>{userName}</span>
       </div>
+
+      <Button onClick={handleLogout}>
+        <LogOut />
+      </Button>
     </header>
   );
 };

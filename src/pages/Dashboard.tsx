@@ -4,22 +4,43 @@ import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ListaOS from '../components/ListaOS';
 import Header from '../components/Header';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GenericModal from '@/components/ModalGeneric';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-
-  const handleCriarOS = () => {
-    navigate('/os');
-  };
-
   // Estados para controlar a abertura dos modais
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [fields, setFields] = useState<{ label: string; type: string; name: string }[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [submitData, setSubmitData] = useState<Function>(() => () => {});
+  const [user, setUser] = useState<{ nome: string; email: string; tipo: string } | null>(null);
+
+  const userName = user?.nome || 'Usuário';
+  const userImage = '/src/assets/avatar.png';
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/');
+    }
+
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      navigate('/');
+    }
+  }, [navigate]);
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const handleCriarOS = () => {
+    navigate('/os');
+  };
 
   // Função para abrir o modal com os campos e título certos
   const openModal = (
@@ -55,7 +76,7 @@ const Dashboard = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
-      <Header userName="Maria Oliveira" userImage="https://i.pravatar.cc/150?img=3" />
+      <Header userName={userName} userImage={userImage} />
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-center gap-4 mb-6">
           {/* Botões para abrir os modais */}
