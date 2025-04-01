@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,64 +11,76 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
 
 interface ServiceOrder {
   id: number;
-  title: string;
-  description: string;
+  descricao: string;
+  status: string;
+  data_abertura: string;
+  data_fechamento: string | null;
+  valor_final: number | null;
+  client_id: number;
+  gestor_id: number;
+  tecnico_id: number;
 }
 
 const ListaOS = () => {
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<ServiceOrder | null>(null);
-  const [orders, setOrders] = useState<ServiceOrder[]>([
-    { id: 1, title: 'Ordem 1', description: 'Descrição da ordem 1' },
-    { id: 2, title: 'Ordem 2', description: 'Descrição da ordem 2' },
-    { id: 3, title: 'Ordem 3', description: 'Descrição da ordem 3' },
-  ]);
+  const [orders, setOrders] = useState<ServiceOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Estados para armazenar as informações da OS
-  const [client, setClient] = useState<string>('');
-  const [status, setStatus] = useState<string>('');
-  const [totalValue, setTotalValue] = useState<number>(0);
-  const [tecnico, setTecnico] = useState<string>('');
+  const navigate = useNavigate();
 
-  // Exemplo de uma OS selecionada para demonstrar o preenchimento dos dados
-  const selectedOrderData = {
-    client: 'João Silva',
-    status: 'Em andamento',
-    totalValue: 150.5,
-    technician: 'Carlos Pereira',
-  };
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem('token');
 
-  // Função que preenche os dados da OS no modal
+        const response = await axios.get<ServiceOrder[]>('http://localhost:3000/os/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setOrders(response.data);
+      } catch (err) {
+        setError('Erro ao carregar as ordens de serviço');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
   const handleSelectOrder = (order: ServiceOrder) => {
-    setClient(selectedOrderData.client);
-    setStatus(selectedOrderData.status);
-    setTotalValue(selectedOrderData.totalValue);
-    setTecnico(selectedOrderData.technician);
-    setSelectedOrder(order); // Atualiza a OS selecionada
+    setSelectedOrder(order);
   };
 
-  // Filtra as ordens de serviço com base na pesquisa
   const filteredOrders = orders.filter((order) =>
-    order.title.toLowerCase().includes(search.toLowerCase()),
+    order.descricao?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  // Função para deletar a ordem de serviço
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedOrder) {
-      setOrders(orders.filter((order) => order.id !== selectedOrder.id));
-      setSelectedOrder(null); // Fecha o modal após a exclusão
+      try {
+        await axios.delete(`http://localhost:3000/os/${selectedOrder.id}`);
+        setOrders(orders.filter((order) => order.id !== selectedOrder.id));
+        setSelectedOrder(null);
+      } catch (err) {
+        setError('Erro ao deletar a ordem de serviço');
+        console.log(err);
+      }
     }
   };
 
-  // Função para selecionar a ordem para edição
   const handleEditOrder = () => {
     if (selectedOrder) {
-      // Lógica para editar a ordem de serviço
-      console.log('Editando a ordem:', selectedOrder);
-      // Aqui, você pode abrir um formulário de edição ou algo semelhante
+      navigate(`/os/${selectedOrder.id}`);
     }
   };
 
@@ -96,49 +109,66 @@ const ListaOS = () => {
       </div>
 
       {/* Lista de Ordens de Serviço */}
-      <Card className="p-4">
-        {filteredOrders.length > 0 ? (
-          <ul className="space-y-2">
-            {filteredOrders.map((order) => (
-              <li
-                key={order.id}
-                className="border-b p-2 cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSelectOrder(order)}
+      {loading ? (
+        <p className="text-center text-gray-500">Carregando...</p>
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p>
+      ) : filteredOrders.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredOrders.map((order) => (
+            <Card
+              key={order.id}
+              className="p-4 border cursor-pointer hover:shadow-md transition"
+              onClick={() => handleSelectOrder(order)}
+            >
+              <h3 className="font-medium text-lg">OS nº {order.id}</h3>
+              <p className="text-gray-500 text-sm mt-1">{order.descricao}</p>
+              <p className="text-sm mt-2">
+                <strong>Cliente:</strong> {order.client_id}
+              </p>
+              <p
+                className={`text-sm mt-1 font-medium ${order.status === 'concluida' ? 'text-green-600' : 'text-yellow-600'}`}
               >
-                <p className="font-medium">{order.title}</p>
-                <p className="text-gray-500 text-sm">{order.description}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500 text-center p-4">Nenhuma ordem encontrada</p>
-        )}
-      </Card>
+                <strong>Status:</strong> {order.status}
+              </p>
+              <p className="text-sm mt-1">
+                <strong>Valor:</strong>{' '}
+                {order.valor_final ? `R$${order.valor_final.toFixed(2)}` : 'Não definido'}
+              </p>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500 text-center p-4">Nenhuma ordem encontrada</p>
+      )}
 
       {/* Modal de Detalhes da OS */}
       {selectedOrder && (
         <Dialog open={selectedOrder !== null} onOpenChange={() => setSelectedOrder(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{selectedOrder.title}</DialogTitle>
+              <DialogTitle>{selectedOrder.descricao}</DialogTitle>
             </DialogHeader>
 
             {/* Descrição da OS */}
-            <p>{selectedOrder.description}</p>
+            <p>{selectedOrder.descricao}</p>
 
             {/* Informações adicionais */}
-            <div className="mt-4">
-              <h3 className="font-medium">Cliente:</h3>
-              <p>{client}</p>
-
-              <h3 className="font-medium mt-2">Status:</h3>
-              <p>{status}</p>
-
-              <h3 className="font-medium mt-2">Valor Final:</h3>
-              <p>R${totalValue.toFixed(2)}</p>
-
-              <h3 className="font-medium mt-2">Técnico Responsável:</h3>
-              <p>{tecnico}</p>
+            <div className="mt-4 space-y-2">
+              <p>
+                <strong>Status:</strong> {selectedOrder.status}
+              </p>
+              <p>
+                <strong>Data de Abertura:</strong>{' '}
+                {new Date(selectedOrder.data_abertura).toLocaleDateString()}
+              </p>
+              <p>
+                {}
+                <strong>Valor Final:</strong>{' '}
+                {selectedOrder.valor_final
+                  ? `R$${selectedOrder.valor_final.toFixed(2)}`
+                  : 'Não definido'}
+              </p>
             </div>
 
             <DialogFooter>

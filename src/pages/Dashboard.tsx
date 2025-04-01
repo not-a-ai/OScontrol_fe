@@ -17,9 +17,6 @@ const Dashboard = () => {
   const [submitData, setSubmitData] = useState<Function>(() => () => {});
   const [user, setUser] = useState<{ nome: string; email: string; tipo: string } | null>(null);
 
-  const userName = user?.nome || 'Usuário';
-  const userImage = '/src/assets/avatar.png';
-
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -76,7 +73,7 @@ const Dashboard = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
-      <Header userName={userName} userImage={userImage} />
+      <Header />
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-center gap-4 mb-6">
           {/* Botões para abrir os modais */}
