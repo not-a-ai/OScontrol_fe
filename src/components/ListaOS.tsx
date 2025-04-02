@@ -39,16 +39,18 @@ const ListaOS = () => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await axios.get<ServiceOrder[]>('http://localhost:3000/os/', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await axios.get<ServiceOrder[]>('http://localhost:3000/os', {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        setOrders(response.data);
+        if (response.status === 200 && response.data.length === 0) {
+          setError('Nenhuma ordem de serviço cadastrada.');
+        } else {
+          setOrders(Array.isArray(response.data) ? response.data : []);
+        }
       } catch (err) {
         setError('Erro ao carregar as ordens de serviço');
-        console.error(err);
+        console.log(err);
       } finally {
         setLoading(false);
       }
@@ -138,7 +140,7 @@ const ListaOS = () => {
               </p>
               <p className="text-sm mt-1">
                 <strong>Valor:</strong>{' '}
-                {order.valor_final ? `R$${order.valor_final.toFixed(2)}` : 'Não definido'}
+                {order.valor_final ? `R$${order.valor_final}` : 'Não definido'}
               </p>
             </Card>
           ))}
@@ -170,9 +172,7 @@ const ListaOS = () => {
               <p>
                 {}
                 <strong>Valor Final:</strong>{' '}
-                {selectedOrder.valor_final
-                  ? `R$${selectedOrder.valor_final.toFixed(2)}`
-                  : 'Não definido'}
+                {selectedOrder.valor_final ? `R$${selectedOrder.valor_final}` : 'Não definido'}
               </p>
             </div>
 

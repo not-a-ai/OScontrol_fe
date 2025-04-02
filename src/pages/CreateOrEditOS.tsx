@@ -28,9 +28,15 @@ const services = [
 ];
 
 const clients = [
-  { id: 1, name: 'Cliente X' },
-  { id: 2, name: 'Cliente Y' },
-  { id: 3, name: 'Cliente Z' },
+  { id: 1, name: 'Cliente 1' },
+  { id: 2, name: 'Cliente 2' },
+  { id: 3, name: 'Cliente 3' },
+];
+
+const tecnicos = [
+  { id: 1, name: 'Tecnico 1' },
+  { id: 2, name: 'Tecnico 2' },
+  { id: 3, name: 'Tecnico 3' },
 ];
 
 const CreateOrEditOS = () => {
@@ -42,7 +48,7 @@ const CreateOrEditOS = () => {
   const [closingDate, setClosingDate] = useState<Date | undefined>(undefined);
   const [finalValue, setFinalValue] = useState<number | ''>('');
   const [client, setClient] = useState<number | null>(null);
-
+  const [tecnico, setTecnico] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredServices, setFilteredServices] = useState(services);
   const [servicesList, setServicesList] = useState<
@@ -103,28 +109,25 @@ const CreateOrEditOS = () => {
     const userId = user?.id;
 
     const token = localStorage.getItem('token');
-    console.log(token);
 
     const ordemDeServico = {
       descricao: description,
       client_id: client,
       gestor_id: userId,
-      tecnico_id: 0,
+      tecnico_id: tecnico,
       status: status,
-      opening_date: openingDate ? openingDate.toISOString() : null,
-      closing_date: closingDate ? closingDate.toISOString() : null,
-      valor_final: finalValue,
+      data_abertura: openingDate ? new Date(openingDate).toISOString() : null,
+      data_fechamento: closingDate ? new Date(closingDate).toISOString() : null,
+      valor_final: finalValue ? Number(finalValue) : null,
     };
 
     try {
-      const response = await axios.post('http://localhost:3000/os', ordemDeServico, {
+      await axios.post('http://localhost:3000/os', ordemDeServico, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
-
-      console.log('Ordem de serviço criada:', response.data);
     } catch (error) {
       console.error('Erro ao criar OS:', error);
     }
@@ -153,7 +156,6 @@ const CreateOrEditOS = () => {
               <X className="w-6 h-6 text-white" />
             </Button>
           </div>
-
           {/* Descrição */}
           <div className="mb-4">
             <Label htmlFor="description">Descrição</Label>
@@ -164,7 +166,6 @@ const CreateOrEditOS = () => {
               placeholder="Descrição da ordem de serviço"
             />
           </div>
-
           {/* Status */}
           <div className="mb-4">
             <Label htmlFor="status">Status</Label>
@@ -173,13 +174,13 @@ const CreateOrEditOS = () => {
                 <SelectValue placeholder="Selecione o status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Em Andamento">Em Andamento</SelectItem>
-                <SelectItem value="Concluída">Concluída</SelectItem>
-                <SelectItem value="Pendente">Pendente</SelectItem>
+                <SelectItem value="aberta">Aberta</SelectItem>
+                <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                <SelectItem value="concluida">Concluída</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
           {/* Data de Abertura */}
           <div className="mb-4">
             <Label htmlFor="openingDate">Data de Abertura</Label>
@@ -203,7 +204,6 @@ const CreateOrEditOS = () => {
               </PopoverContent>
             </Popover>
           </div>
-
           {/* Data de Fechamento */}
           <div className="mb-4">
             <Label htmlFor="closingDate">Data de Fechamento</Label>
@@ -227,7 +227,6 @@ const CreateOrEditOS = () => {
               </PopoverContent>
             </Popover>
           </div>
-
           {/* Serviços Prestados */}
           <div className="mb-4">
             <Label htmlFor="service-search">Buscar Serviço</Label>
@@ -303,7 +302,6 @@ const CreateOrEditOS = () => {
               )}
             </div>
           </div>
-
           {/* Cliente */}
           <div className="mb-4">
             <Label htmlFor="client">Cliente</Label>
@@ -320,7 +318,29 @@ const CreateOrEditOS = () => {
               </SelectContent>
             </Select>
           </div>
-
+          {/* tecnico */}
+          <div className="mb-4">
+            <Label htmlFor="client">Técnico responsável</Label>
+            <Select
+              value={tecnicos?.toString()}
+              onValueChange={(value) => setTecnico(Number(value))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione o Técnico" />
+              </SelectTrigger>
+              <SelectContent>
+                {tecnicos?.map((tecnico) => (
+                  <SelectItem key={tecnico.id} value={tecnico.id.toString()}>
+                    {tecnico.name}
+                  </SelectItem>
+                )) || (
+                  <SelectItem disabled value={''}>
+                    Nenhum técnico disponível
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
           {/* Valor Final */}
           <div className="mb-4">
             <Label htmlFor="finalValue">Valor Final</Label>
@@ -332,7 +352,6 @@ const CreateOrEditOS = () => {
               placeholder="Valor final da ordem de serviço"
             />
           </div>
-
           {/* Botão de Submit */}
           <Button onClick={handleSubmit} className="w-full mt-4 bg-orange">
             Salvar Ordem de Serviço

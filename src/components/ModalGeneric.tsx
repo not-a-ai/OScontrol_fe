@@ -39,7 +39,11 @@ const GenericModal: React.FC<ModalProps> = ({ isOpen, onClose, title, fields, on
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogClose asChild>
-            <Button variant="ghost" className="absolute top-2 right-2" onClick={onClose}></Button>
+            <Button
+              variant="secondary"
+              className="absolute top-2 right-2"
+              onClick={onClose}
+            ></Button>
           </DialogClose>
         </DialogHeader>
 
