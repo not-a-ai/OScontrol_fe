@@ -15,7 +15,6 @@ export const login = async (email: string, senha: string): Promise<LoginResponse
     email,
     senha,
   });
-  console.log(response);
 
   return response.data;
 };

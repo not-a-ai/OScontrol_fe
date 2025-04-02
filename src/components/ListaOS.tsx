@@ -36,9 +36,9 @@ const ListaOS = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token');
 
+      try {
         const response = await axios.get<ServiceOrder[]>('http://localhost:3000/os/', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -66,9 +66,14 @@ const ListaOS = () => {
   );
 
   const handleDelete = async () => {
+    const token = localStorage.getItem('token');
+
     if (selectedOrder) {
       try {
-        await axios.delete(`http://localhost:3000/os/${selectedOrder.id}`);
+        await axios.delete(`http://localhost:3000/os/${selectedOrder.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
         setOrders(orders.filter((order) => order.id !== selectedOrder.id));
         setSelectedOrder(null);
       } catch (err) {

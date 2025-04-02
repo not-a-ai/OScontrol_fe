@@ -18,6 +18,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import Header from '../components/Header';
+import axios from 'axios';
 
 // Exemplos de dados pré-cadastrados
 const services = [
@@ -95,22 +96,43 @@ const CreateOrEditOS = () => {
     );
   };
 
-  const handleSubmit = () => {
-    const orderData = {
-      description,
-      status,
-      openingDate,
-      closingDate,
-      finalValue,
-      client,
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user?.id;
+
+    const token = localStorage.getItem('token');
+    console.log(token);
+
+    const ordemDeServico = {
+      descricao: description,
+      client_id: client,
+      gestor_id: userId,
+      tecnico_id: 0,
+      status: status,
+      opening_date: openingDate ? openingDate.toISOString() : null,
+      closing_date: closingDate ? closingDate.toISOString() : null,
+      valor_final: finalValue,
     };
-    console.log('Ordem de serviço cadastrada/atualizada', orderData);
-    // Aqui você pode realizar a lógica de salvar ou editar a ordem de serviço no backend
+
+    try {
+      const response = await axios.post('http://localhost:3000/os', ordemDeServico, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('Ordem de serviço criada:', response.data);
+    } catch (error) {
+      console.error('Erro ao criar OS:', error);
+    }
     navigate('/dashboard');
   };
 
   const handleCancel = () => {
-    navigate('/dashboard'); // Redireciona para o dashboard ao cancelar
+    navigate('/dashboard');
   };
 
   return (

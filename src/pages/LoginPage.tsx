@@ -16,9 +16,7 @@ function Login() {
     setError(null);
 
     try {
-      console.log(email, senha);
       const data = await login(email, senha);
-      console.log('Login realizado com sucesso:', data);
 
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
