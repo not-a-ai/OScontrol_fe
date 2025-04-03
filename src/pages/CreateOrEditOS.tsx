@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -42,6 +42,10 @@ const tecnicos = [
 const CreateOrEditOS = () => {
   const navigate = useNavigate();
 
+  const token = localStorage.getItem('token');
+
+  const { id } = useParams();
+
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('');
   const [openingDate, setOpeningDate] = useState<Date | undefined>(undefined);
@@ -58,6 +62,8 @@ const CreateOrEditOS = () => {
       quantity: number;
     }[]
   >([]);
+  const [ordemDeServico, setOrdemDeServico] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
@@ -104,11 +110,9 @@ const CreateOrEditOS = () => {
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-
+    const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userId = user?.id;
-
-    const token = localStorage.getItem('token');
 
     const ordemDeServico = {
       descricao: description,
@@ -121,22 +125,80 @@ const CreateOrEditOS = () => {
       valor_final: finalValue ? Number(finalValue) : null,
     };
 
-    try {
-      await axios.post('http://localhost:3000/os', ordemDeServico, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    } catch (error) {
-      console.error('Erro ao criar OS:', error);
+    const ordemExiste = await axios.get('http://localhost:3000/os', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (ordemExiste) {
+      try {
+        await axios.patch(`http://localhost:3000/os/${id}`, ordemDeServico, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        alert('Ordem de serviço atualizada com sucesso!');
+      } catch (error) {
+        console.log('Erro ao atualizar OS:', error);
+        alert('Não foi possível atualizar sua OS.');
+      }
+      navigate('/dashboard');
+    } else {
+      try {
+        await axios.post('http://localhost:3000/os', ordemDeServico, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        alert('Ordem de serviço criada com sucesso!');
+      } catch (error) {
+        console.error('Erro ao criar OS:', error);
+        alert('Não foi possível criar sua OS.');
+      }
+      navigate('/dashboard');
     }
-    navigate('/dashboard');
   };
 
   const handleCancel = () => {
     navigate('/dashboard');
   };
+
+  if (id) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useEffect(() => {
+      axios
+        .get(`http://localhost:3000/os/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          const osData = response.data;
+          setOrdemDeServico(osData);
+          setDescription(osData.descricao || '');
+          setClient(osData.client_id || null);
+          setTecnico(osData.tecnico_id || null);
+          setStatus(osData.status || '');
+          setOpeningDate(osData.data_abertura ? new Date(osData.data_abertura) : undefined);
+          setClosingDate(osData.data_fechamento ? new Date(osData.data_fechamento) : undefined);
+          setFinalValue(osData.valor_final || '');
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar OS:', error);
+          setLoading(false);
+        });
+    }, [id, token]);
+
+    if (loading) return <p>Carregando...</p>;
+    if (!ordemDeServico) return <p>OS não encontrada</p>;
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
@@ -163,7 +225,7 @@ const CreateOrEditOS = () => {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrição da ordem de serviço"
+              placeholder={description || 'Descrição da ordem de serviço'}
             />
           </div>
           {/* Status */}
@@ -171,7 +233,7 @@ const CreateOrEditOS = () => {
             <Label htmlFor="status">Status</Label>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione o status" />
+                <SelectValue placeholder={status || 'Selecione o status'} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="aberta">Aberta</SelectItem>
@@ -307,7 +369,7 @@ const CreateOrEditOS = () => {
             <Label htmlFor="client">Cliente</Label>
             <Select value={client?.toString()} onValueChange={(value) => setClient(Number(value))}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione o cliente" />
+                <SelectValue placeholder={client || 'Selecione o cliente'} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((client) => (
@@ -322,11 +384,11 @@ const CreateOrEditOS = () => {
           <div className="mb-4">
             <Label htmlFor="client">Técnico responsável</Label>
             <Select
-              value={tecnicos?.toString()}
+              value={tecnico ? String(tecnico) : ''}
               onValueChange={(value) => setTecnico(Number(value))}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione o Técnico" />
+                <SelectValue placeholder={tecnico || 'Selecione o Técnico'} />
               </SelectTrigger>
               <SelectContent>
                 {tecnicos?.map((tecnico) => (

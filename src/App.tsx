@@ -12,6 +12,7 @@ const App = () => {
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/os" element={<CreateOrEditOS />} />
+        <Route path="/os/:id" element={<CreateOrEditOS />} />
       </Routes>
     </BrowserRouter>
   );

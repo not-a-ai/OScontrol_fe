@@ -154,7 +154,7 @@ const ListaOS = () => {
         <Dialog open={selectedOrder !== null} onOpenChange={() => setSelectedOrder(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{selectedOrder.descricao}</DialogTitle>
+              <DialogTitle>OS n° {selectedOrder.id}</DialogTitle>
             </DialogHeader>
 
             {/* Descrição da OS */}
@@ -168,6 +168,19 @@ const ListaOS = () => {
               <p>
                 <strong>Data de Abertura:</strong>{' '}
                 {new Date(selectedOrder.data_abertura).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Data de Fechamento:</strong>{' '}
+                {selectedOrder.data_fechamento
+                  ? new Date(selectedOrder.data_fechamento).toLocaleDateString()
+                  : 'Não concluída'}
+              </p>
+              <p>
+                {/* buscar nome do técnico */}
+                <strong>Técnico:</strong>{' '}
+                {selectedOrder.tecnico_id
+                  ? `ID do técnico ${selectedOrder.tecnico_id}`
+                  : 'Não definido'}
               </p>
               <p>
                 {}
