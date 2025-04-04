@@ -54,9 +54,21 @@ const Dashboard = () => {
   };
 
   // Funções de submissão para cada tipo
-  const handleSubmitTécnico = (data: Record<string, string>) => {
+  const handleSubmitTécnico = async (data: Record<string, string>) => {
     console.log('Dados do Técnico:', data);
-    // Aqui você pode fazer o envio dos dados para a API ou algo mais
+    try {
+      const token = localStorage.getItem('token');
+
+      data = { ...data, tipo: 'tecnico', senha: '123' };
+
+      await axios.post('http://localhost:3000/usuario', data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert('Criou tecnico com sucesso!');
+    } catch (e) {
+      console.error(e);
+      alert('Ocorreu um erro.');
+    }
     setIsModalOpen(false);
   };
 
