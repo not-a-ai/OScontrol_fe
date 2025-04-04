@@ -6,6 +6,7 @@ import ListaOS from '../components/ListaOS';
 import Header from '../components/Header';
 import { useEffect, useState } from 'react';
 import GenericModal from '@/components/ModalGeneric';
+import axios from 'axios';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -65,9 +66,19 @@ const Dashboard = () => {
     setIsModalOpen(false);
   };
 
-  const handleSubmitCliente = (data: Record<string, string>) => {
-    console.log('Dados do Cliente:', data);
-    // Envio para a API ou lógica para o cliente
+  const handleSubmitCliente = async (data: Record<string, string>) => {
+    try {
+      const token = localStorage.getItem('token');
+
+      await axios.post('http://localhost:3000/clientes', data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert('Criou cliente com sucesso!');
+    } catch (e) {
+      console.error(e);
+      alert('Ocorreu um erro.');
+    }
+
     setIsModalOpen(false);
   };
 

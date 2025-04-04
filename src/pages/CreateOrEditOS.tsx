@@ -20,24 +20,29 @@ import { format } from 'date-fns';
 import Header from '../components/Header';
 import axios from 'axios';
 
-// Exemplos de dados pré-cadastrados
-const services = [
-  { id: 1, name: 'Serviço A' },
-  { id: 2, name: 'Serviço B' },
-  { id: 3, name: 'Serviço C' },
-];
+interface Cliente {
+  id: number;
+  nome: string;
+  email: string;
+}
 
-const clients = [
-  { id: 1, name: 'Cliente 1' },
-  { id: 2, name: 'Cliente 2' },
-  { id: 3, name: 'Cliente 3' },
-];
+// interface Servico {
+//   nome: string;
+//   id: number;
+//   quantidade: number;
+// }
 
-const tecnicos = [
-  { id: 1, name: 'Tecnico 1' },
-  { id: 2, name: 'Tecnico 2' },
-  { id: 3, name: 'Tecnico 3' },
-];
+interface Tecnico {
+  id: number;
+  nome: string;
+  email: string;
+}
+
+// interface SelectedService {
+//   id: number;
+//   nome: string;
+//   quantidade: number;
+// }
 
 const CreateOrEditOS = () => {
   const navigate = useNavigate();
@@ -51,62 +56,87 @@ const CreateOrEditOS = () => {
   const [openingDate, setOpeningDate] = useState<Date | undefined>(undefined);
   const [closingDate, setClosingDate] = useState<Date | undefined>(undefined);
   const [finalValue, setFinalValue] = useState<number | ''>('');
-  const [client, setClient] = useState<number | null>(null);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState('');
   const [tecnico, setTecnico] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredServices, setFilteredServices] = useState(services);
-  const [servicesList, setServicesList] = useState<
-    {
-      serviceId: number;
-      id: number;
-      quantity: number;
-    }[]
-  >([]);
-  const [ordemDeServico, setOrdemDeServico] = useState(null);
+  const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
+  // const [searchTerm, setSearchTerm] = useState('');
+  // const [services, setServices] = useState<Servico[]>([]);
+  // const [filteredServices, setFilteredServices] = useState<Servico[]>([]);
+  // const [servicesList, setServicesList] = useState<SelectedService[]>([
+  //   { id: 1, nome: 'Serviço A', quantidade: 0 },
+  //   { id: 2, nome: 'Serviço B', quantidade: 0 },
+  //   { id: 3, nome: 'Serviço C', quantidade: 0 },
+  // ]);
   const [loading, setLoading] = useState(true);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    setFilteredServices(
-      services.filter((service) => service.name.toLowerCase().includes(term.toLowerCase())),
-    );
+  // Buscar serviços
+  // const fetchServices = async () => {
+  //   try {
+  //     const response = await axios.get('http://localhost:3000/servicos', {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     setServices(response.data);
+  //     setFilteredServices(response.data);
+  //   } catch (error) {
+  //     console.error('Erro ao buscar serviços:', error);
+  //   }
+  // };
+
+  // Buscar técnicos
+  const fetchTecnicos = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/usuario/tecnicos', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setTecnicos(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar técnicos:', error);
+    }
   };
 
-  const handleSelectService = (service: { id: number }) => {
-    setServicesList((prev) => {
-      const existingService = prev.find((s) => s.serviceId === service.id);
+  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const term = e.target.value;
+  //   setSearchTerm(term);
+  //   setFilteredServices(
+  //     services.filter((service) => service.nome.toLowerCase().includes(term.toLowerCase())),
+  //   );
+  // };
 
-      if (existingService) {
-        // Atualiza a quantidade caso o serviço já exista
-        return prev.map((s) =>
-          s.serviceId === service.id ? { ...s, quantity: s.quantity + 1 } : s,
-        );
-      }
+  // const handleSelectService = (service: Servico) => {
+  //   setServicesList((prev) => {
+  //     const existingService = prev.find((s) => s.id === service.id);
 
-      // Adiciona o serviço com quantidade inicial 1
-      return [...prev, { serviceId: service.id, id: service.id, quantity: 1 }];
-    });
-  };
+  //     if (existingService) {
+  //       return prev.map((s) => (s.id === service.id ? { ...s, quantidade: s.quantidade + 1 } : s));
+  //     }
 
-  const handleRemoveService = (serviceId: number) => {
-    setServicesList(
-      (prev) => prev.filter((service) => service.id !== serviceId), // Remove da lista
-    );
-  };
+  //     return [...prev, { serviceId: service.id, id: service.id, quantidade: 1 }];
+  //   });
+  // };
 
-  const handleUpdateQuantity = (serviceId: number, newQuantity: number) => {
-    setServicesList(
-      (prev) =>
-        prev
-          .map((service) =>
-            service.id === serviceId
-              ? { ...service, quantity: newQuantity } // Atualiza a quantidade
-              : service,
-          )
-          .filter((service) => service.quantity > 0), // Remove serviços com quantidade 0
-    );
-  };
+  // const handleRemoveService = (serviceId: number) => {
+  //   setServicesList(
+  //     (prev) => prev.filter((service) => service.id !== serviceId), // Remove da lista
+  //   );
+  // };
+
+  // const handleUpdateQuantity = (serviceId: number, newQuantity: number) => {
+  //   setServicesList(
+  //     (prev) =>
+  //       prev
+  //         .map((service) =>
+  //           service.id === serviceId
+  //             ? { ...service, quantidade: newQuantity } // Atualiza a quantidade
+  //             : service,
+  //         )
+  //         .filter((service) => service.quantidade > 0), // Remove serviços com quantidade 0
+  //   );
+  // };
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -116,7 +146,7 @@ const CreateOrEditOS = () => {
 
     const ordemDeServico = {
       descricao: description,
-      client_id: client,
+      client_id: clienteSelecionado,
       gestor_id: userId,
       tecnico_id: tecnico,
       status: status,
@@ -125,43 +155,30 @@ const CreateOrEditOS = () => {
       valor_final: finalValue ? Number(finalValue) : null,
     };
 
-    const ordemExiste = await axios.get('http://localhost:3000/os', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (ordemExiste) {
-      try {
+    try {
+      if (id) {
+        // Edição
         await axios.patch(`http://localhost:3000/os/${id}`, ordemDeServico, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
         });
-
         alert('Ordem de serviço atualizada com sucesso!');
-      } catch (error) {
-        console.log('Erro ao atualizar OS:', error);
-        alert('Não foi possível atualizar sua OS.');
-      }
-      navigate('/dashboard');
-    } else {
-      try {
+      } else {
+        // Criação
         await axios.post('http://localhost:3000/os', ordemDeServico, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
         });
-
         alert('Ordem de serviço criada com sucesso!');
-      } catch (error) {
-        console.error('Erro ao criar OS:', error);
-        alert('Não foi possível criar sua OS.');
       }
       navigate('/dashboard');
+    } catch (error) {
+      console.error('Erro ao salvar OS:', error);
+      alert(`Não foi possível ${id ? 'atualizar' : 'criar'} sua OS.`);
     }
   };
 
@@ -169,35 +186,62 @@ const CreateOrEditOS = () => {
     navigate('/dashboard');
   };
 
-  if (id) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-      axios
-        .get(`http://localhost:3000/os/${id}`, {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Buscar clientes
+        const clientesResponse = await axios.get('http://localhost:3000/clientes', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        .then((response) => {
-          const osData = response.data;
-          setOrdemDeServico(osData);
+        });
+        setClientes(clientesResponse.data);
+
+        // Buscar serviços
+        // await fetchServices();
+
+        // Buscar técnicos
+        await fetchTecnicos();
+
+        // Se for edição, buscar os dados da OS
+        if (id) {
+          const osResponse = await axios.get(`http://localhost:3000/os/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const osData = osResponse.data;
+
           setDescription(osData.descricao || '');
-          setClient(osData.client_id || null);
+          setClienteSelecionado(osData.client_id?.toString() || '');
           setTecnico(osData.tecnico_id || null);
           setStatus(osData.status || '');
           setOpeningDate(osData.data_abertura ? new Date(osData.data_abertura) : undefined);
           setClosingDate(osData.data_fechamento ? new Date(osData.data_fechamento) : undefined);
           setFinalValue(osData.valor_final || '');
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error('Erro ao buscar OS:', error);
-          setLoading(false);
-        });
-    }, [id, token]);
 
-    if (loading) return <p>Carregando...</p>;
-    if (!ordemDeServico) return <p>OS não encontrada</p>;
+          // Carregar serviços da OS
+          // if (osData.servicos && osData.servicos.length > 0) {
+          //   setServicesList(
+          //     osData.servicos.map((s: Servico) => ({
+          //       id: s.id,
+          //       quantity: s.quantidade,
+          //     })),
+          //   );
+          // }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, token]);
+
+  if (loading) {
+    return <div>Carregando...</div>;
   }
 
   return (
@@ -289,7 +333,7 @@ const CreateOrEditOS = () => {
               </PopoverContent>
             </Popover>
           </div>
-          {/* Serviços Prestados */}
+          {/* Serviços Prestados
           <div className="mb-4">
             <Label htmlFor="service-search">Buscar Serviço</Label>
             <Input
@@ -307,13 +351,13 @@ const CreateOrEditOS = () => {
                   onClick={() => handleSelectService(service)}
                   className="flex items-center justify-center p-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 shadow-md"
                 >
-                  {service.name}
+                  {service.nome}
                 </Button>
               ))}
             </div>
 
             {/* Lista de serviços selecionados */}
-            <div className="mt-4">
+          {/* <div className="mt-4">
               {servicesList.length > 0 && (
                 <div>
                   <h2 className="text-lg font-bold mb-2">Serviços Selecionados</h2>
@@ -321,38 +365,38 @@ const CreateOrEditOS = () => {
                   {servicesList.map((service) => (
                     <div key={service.id} className="flex items-center gap-4 p-2 border-b">
                       {/* Nome do serviço */}
-                      <span className="flex-1">
-                        {services.find((s) => s.id === service.id)?.name}
-                      </span>
+          {/* <span className="flex-1">
+                        {services.find((s) => s.id === service.id)?.nome}
+                      </span> */}
 
-                      {/* Botão de diminuir quantidade */}
-                      <button
-                        onClick={() => handleUpdateQuantity(service.id, service.quantity - 1)}
-                        disabled={service.quantity <= 1}
+          {/* Botão de diminuir quantidade */}
+          {/* <button
+                        onClick={() => handleUpdateQuantity(service.id, service.quantidade - 1)}
+                        disabled={service.quantidade <= 1}
                         className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
                       >
                         -
                       </button>
 
-                      {/* Campo de entrada para editar quantidade */}
-                      <input
+                      Campo de entrada para editar quantidade */}
+          {/* <input
                         type="number"
                         min="1"
-                        value={service.quantity}
+                        value={service.quantidade}
                         onChange={(e) => handleUpdateQuantity(service.id, Number(e.target.value))}
                         className="w-12 text-center border"
                       />
 
                       {/* Botão de aumentar quantidade */}
-                      <button
-                        onClick={() => handleUpdateQuantity(service.id, service.quantity + 1)}
+          {/* <button
+                        onClick={() => handleUpdateQuantity(service.id, service.quantidade + 1)}
                         className="px-2 py-1 bg-gray-200 rounded"
                       >
                         +
                       </button>
 
                       {/* Botão de remover serviço */}
-                      <button
+          {/* <button
                         onClick={() => handleRemoveService(service.id)}
                         className="px-3 py-1 bg-red-500 text-white rounded"
                       >
@@ -363,18 +407,21 @@ const CreateOrEditOS = () => {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
           {/* Cliente */}
           <div className="mb-4">
             <Label htmlFor="client">Cliente</Label>
-            <Select value={client?.toString()} onValueChange={(value) => setClient(Number(value))}>
+            <Select
+              value={clienteSelecionado?.toString()}
+              onValueChange={(value) => setClienteSelecionado(value)}
+            >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={client || 'Selecione o cliente'} />
+                <SelectValue placeholder={clienteSelecionado || 'Selecione o cliente'} />
               </SelectTrigger>
               <SelectContent>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id.toString()}>
-                    {client.name}
+                {clientes.map((cliente) => (
+                  <SelectItem key={cliente.id} value={cliente.id.toString()}>
+                    {cliente.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -393,7 +440,7 @@ const CreateOrEditOS = () => {
               <SelectContent>
                 {tecnicos?.map((tecnico) => (
                   <SelectItem key={tecnico.id} value={tecnico.id.toString()}>
-                    {tecnico.name}
+                    {tecnico.nome}
                   </SelectItem>
                 )) || (
                   <SelectItem disabled value={''}>
