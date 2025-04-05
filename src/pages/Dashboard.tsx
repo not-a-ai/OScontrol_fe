@@ -72,9 +72,19 @@ const Dashboard = () => {
     setIsModalOpen(false);
   };
 
-  const handleSubmitServiço = (data: Record<string, string>) => {
+  const handleSubmitServiço = async (data: Record<string, string>) => {
     console.log('Dados do Serviço:', data);
-    // Envio para a API ou lógica para o serviço
+    try {
+      const token = localStorage.getItem('token');
+
+      await axios.post('http://localhost:3000/servico', data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert('Criou serviço com sucesso!');
+    } catch (e) {
+      console.error(e);
+      alert('Ocorreu um erro.');
+    }
     setIsModalOpen(false);
   };
 
@@ -124,7 +134,7 @@ const Dashboard = () => {
                 [
                   { label: 'Nome', type: 'text', name: 'nome' },
                   { label: 'Descrição', type: 'text', name: 'descricao' },
-                  { label: 'Preço Base', type: 'number', name: 'preco' },
+                  { label: 'Preço Base', type: 'number', name: 'precoBase' },
                 ],
                 handleSubmitServiço,
               )
