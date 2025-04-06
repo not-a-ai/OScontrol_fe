@@ -14,9 +14,17 @@ interface ModalProps {
   title: string;
   fields: { label: string; type: string; name: string }[];
   onSubmit: (data: Record<string, string>) => void;
+  dataList?: string[];
 }
 
-const GenericModal: React.FC<ModalProps> = ({ isOpen, onClose, title, fields, onSubmit }) => {
+const GenericModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  fields,
+  onSubmit,
+  dataList,
+}) => {
   const [formData, setFormData] = useState<Record<string, string>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,6 +78,36 @@ const GenericModal: React.FC<ModalProps> = ({ isOpen, onClose, title, fields, on
             </Button>
           </div>
         </form>
+
+        {dataList && dataList.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold mb-2">Cadastrados</h3>
+            <div className="overflow-x-auto max-h-40 overflow-y-auto border rounded-md">
+              <table className="min-w-full text-sm text-left table-auto">
+                <thead>
+                  <tr>
+                    {Object.keys(dataList[0]).map((key) => (
+                      <th key={key} className="px-3 py-2 border-b font-medium">
+                        {key}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataList.map((item, index) => (
+                    <tr key={index}>
+                      {Object.values(item).map((value, i) => (
+                        <td key={i} className="px-3 py-2 border-b">
+                          {value}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

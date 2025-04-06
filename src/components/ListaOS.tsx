@@ -20,9 +20,23 @@ interface ServiceOrder {
   data_abertura: string;
   data_fechamento: string | null;
   valor_final: number | null;
-  client_id: number;
-  gestor_id: number;
-  tecnico_id: number;
+  cliente: Cliente;
+  gestor: Usuario;
+  tecnico: Usuario;
+}
+
+interface Usuario {
+  id: number;
+  nome: string;
+  email: string;
+}
+
+interface Cliente {
+  id: number;
+  nome: string;
+  telefone: string;
+  email: string;
+  endereco: string;
 }
 
 const ListaOS = () => {
@@ -131,7 +145,7 @@ const ListaOS = () => {
               <h3 className="font-medium text-lg">OS nº {order.id}</h3>
               <p className="text-gray-500 text-sm mt-1">{order.descricao}</p>
               <p className="text-sm mt-2">
-                <strong>Cliente:</strong> {order.client_id}
+                <strong>Cliente:</strong> {order.cliente.nome}
               </p>
               <p
                 className={`text-sm mt-1 font-medium ${order.status === 'concluida' ? 'text-green-600' : 'text-yellow-600'}`}
@@ -178,9 +192,7 @@ const ListaOS = () => {
               <p>
                 {/* buscar nome do técnico */}
                 <strong>Técnico:</strong>{' '}
-                {selectedOrder.tecnico_id
-                  ? `ID do técnico ${selectedOrder.tecnico_id}`
-                  : 'Não definido'}
+                {selectedOrder.tecnico ? `${selectedOrder.tecnico.nome}` : 'Não definido'}
               </p>
               <p>
                 {}

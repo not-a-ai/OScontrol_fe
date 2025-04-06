@@ -17,6 +17,7 @@ const Dashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [submitData, setSubmitData] = useState<Function>(() => () => {});
   const [user, setUser] = useState<{ nome: string; email: string; tipo: string } | null>(null);
+  const [dataList, setDataList] = useState<Array<string>>([]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -41,21 +42,40 @@ const Dashboard = () => {
   };
 
   // Função para abrir o modal com os campos e título certos
-  const openModal = (
+  const openModal = async (
     title: string,
     modalFields: { label: string; type: string; name: string }[],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     onSubmit: Function,
+    tipo: string,
   ) => {
     setModalTitle(title);
     setFields(modalFields);
     setSubmitData(() => onSubmit);
     setIsModalOpen(true);
+    await fetchDataList(tipo);
+  };
+  const fetchDataList = async (tipo: string) => {
+    try {
+      let url = 'http://localhost:3000';
+      if (tipo === 'cliente') url += '/clientes';
+      if (tipo === 'tecnico') url += '/usuario/tecnicos';
+      if (tipo === 'servico') url += '/servico';
+
+      const token = localStorage.getItem('token');
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setDataList(response.data);
+    } catch (err) {
+      console.error('Erro ao buscar dados:', err);
+    }
   };
 
   // Funções de submissão para cada tipo
   const handleSubmitTécnico = async (data: Record<string, string>) => {
-    console.log('Dados do Técnico:', data);
     try {
       const token = localStorage.getItem('token');
 
@@ -65,15 +85,14 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert('Criou tecnico com sucesso!');
+      await fetchDataList('tecnico');
     } catch (e) {
       console.error(e);
       alert('Ocorreu um erro.');
     }
-    setIsModalOpen(false);
   };
 
   const handleSubmitServiço = async (data: Record<string, string>) => {
-    console.log('Dados do Serviço:', data);
     try {
       const token = localStorage.getItem('token');
 
@@ -85,7 +104,6 @@ const Dashboard = () => {
       console.error(e);
       alert('Ocorreu um erro.');
     }
-    setIsModalOpen(false);
   };
 
   const handleSubmitCliente = async (data: Record<string, string>) => {
@@ -100,8 +118,6 @@ const Dashboard = () => {
       console.error(e);
       alert('Ocorreu um erro.');
     }
-
-    setIsModalOpen(false);
   };
 
   return (
@@ -120,6 +136,7 @@ const Dashboard = () => {
                   { label: 'E-mail', type: 'email', name: 'email' },
                 ],
                 handleSubmitTécnico,
+                'tecnico',
               )
             }
           >
@@ -137,6 +154,7 @@ const Dashboard = () => {
                   { label: 'Preço Base', type: 'number', name: 'precoBase' },
                 ],
                 handleSubmitServiço,
+                'servico',
               )
             }
           >
@@ -155,6 +173,7 @@ const Dashboard = () => {
                   { label: 'Endereço', type: 'text', name: 'endereco' },
                 ],
                 handleSubmitCliente,
+                'cliente',
               )
             }
           >
@@ -168,6 +187,7 @@ const Dashboard = () => {
             title={modalTitle}
             fields={fields}
             onSubmit={(data) => submitData(data)}
+            dataList={dataList}
           />
         </div>
 
