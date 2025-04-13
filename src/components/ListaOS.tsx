@@ -23,6 +23,7 @@ interface ServiceOrder {
   cliente: Cliente;
   gestor: Usuario;
   tecnico: Usuario;
+  atendimentos: Atendimento[];
 }
 
 interface Usuario {
@@ -39,6 +40,14 @@ interface Cliente {
   endereco: string;
 }
 
+interface Atendimento {
+  id: number;
+  diagnostico: string;
+  solucao: string;
+  observacao: string;
+  createdAt: Date;
+}
+
 const ListaOS = () => {
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<ServiceOrder | null>(null);
@@ -47,20 +56,23 @@ const ListaOS = () => {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
+  const handleSelectOrder = (order: ServiceOrder) => {
+    setSelectedOrder(order);
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await axios.get<ServiceOrder[]>('http://localhost:3000/os', {
+        const orders = await axios.get<ServiceOrder[]>('http://localhost:3000/os', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.status === 200 && response.data.length === 0) {
+        if (orders.status === 200 && orders.data.length === 0) {
           setError('Nenhuma ordem de serviço cadastrada.');
         } else {
-          setOrders(Array.isArray(response.data) ? response.data : []);
+          setOrders(Array.isArray(orders.data) ? orders.data : []);
         }
       } catch (err) {
         setError('Erro ao carregar as ordens de serviço');
@@ -72,10 +84,6 @@ const ListaOS = () => {
 
     fetchOrders();
   }, []);
-
-  const handleSelectOrder = (order: ServiceOrder) => {
-    setSelectedOrder(order);
-  };
 
   const filteredOrders = orders.filter((order) =>
     order.descricao?.toLowerCase().includes(search.toLowerCase()),
@@ -102,6 +110,29 @@ const ListaOS = () => {
   const handleEditOrder = () => {
     if (selectedOrder) {
       navigate(`/os/${selectedOrder.id}`);
+    }
+  };
+
+  const handleDeleteAtendimento = async (id: number) => {
+    const token = localStorage.getItem('token');
+
+    if (!selectedOrder) return;
+
+    const confirmDelete = window.confirm('Tem certeza que deseja excluir este atendimento?');
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`http://localhost:3000/atendimentos/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Atualiza a lista de atendimentos localmente
+      setSelectedOrder({
+        ...selectedOrder,
+        atendimentos: selectedOrder.atendimentos.filter((a) => a.id !== id),
+      });
+    } catch (error) {
+      console.error('Erro ao deletar atendimento:', error);
+      alert('Erro ao deletar atendimento.');
     }
   };
 
@@ -199,6 +230,40 @@ const ListaOS = () => {
                 <strong>Valor Final:</strong>{' '}
                 {selectedOrder.valor_final ? `R$${selectedOrder.valor_final}` : 'Não definido'}
               </p>
+              {/* Lista de Atendimentos */}
+              {selectedOrder.atendimentos ? (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold">Atendimentos</h3>
+                  <ul className="mt-2 space-y-2">
+                    {selectedOrder.atendimentos.map((atendimento: Atendimento, index: number) => (
+                      <li key={index} className="border p-2 rounded">
+                        <p>
+                          <strong>Data:</strong> {new Date(atendimento.createdAt).toLocaleString()}
+                        </p>
+                        <p>
+                          <strong>Diagnóstico:</strong> {atendimento.diagnostico}
+                        </p>
+                        <p>
+                          <strong>Solução:</strong> {atendimento.solucao}
+                        </p>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => handleDeleteAtendimento(atendimento.id)}
+                        >
+                          Excluir
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold">Atendimentos</h3>
+                  <p>Nenhum atendimento registrado.</p>
+                </div>
+              )}
             </div>
 
             <DialogFooter>
@@ -207,6 +272,9 @@ const ListaOS = () => {
               </Button>
               <Button variant="default" onClick={handleEditOrder}>
                 Editar
+              </Button>
+              <Button onClick={() => navigate(`/os/${selectedOrder.id}/atendimento`)}>
+                Registrar Atendimento
               </Button>
             </DialogFooter>
           </DialogContent>

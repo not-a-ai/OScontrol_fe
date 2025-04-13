@@ -8,6 +8,12 @@ import { useEffect, useState } from 'react';
 import GenericModal from '@/components/ModalGeneric';
 import axios from 'axios';
 
+interface User {
+  id: string;
+  nome: string;
+  tipo: 'tecnico' | 'admin'; // ou os tipos que tiver
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   // Estados para controlar a abertura dos modais
@@ -16,8 +22,8 @@ const Dashboard = () => {
   const [fields, setFields] = useState<{ label: string; type: string; name: string }[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [submitData, setSubmitData] = useState<Function>(() => () => {});
-  const [user, setUser] = useState<{ nome: string; email: string; tipo: string } | null>(null);
   const [dataList, setDataList] = useState<Array<string>>([]);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -41,7 +47,6 @@ const Dashboard = () => {
     navigate('/os');
   };
 
-  // Função para abrir o modal com os campos e título certos
   const openModal = async (
     title: string,
     modalFields: { label: string; type: string; name: string }[],
@@ -120,87 +125,92 @@ const Dashboard = () => {
     }
   };
 
+  const isTecnico = user?.tipo === 'tecnico';
+
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
       <Header />
       <div className="container mx-auto py-8 px-4">
-        <div className="flex justify-center gap-4 mb-6">
-          {/* Botões para abrir os modais */}
-          <Button
-            variant="secondary"
-            onClick={() =>
-              openModal(
-                'Cadastrar Técnico',
-                [
-                  { label: 'Nome', type: 'text', name: 'nome' },
-                  { label: 'E-mail', type: 'email', name: 'email' },
-                ],
-                handleSubmitTécnico,
-                'tecnico',
-              )
-            }
-          >
-            Cadastrar Técnico
-          </Button>
+        {!isTecnico && (
+          <div className="flex justify-center gap-4 mb-6">
+            {/* Botões para abrir os modais */}
+            <Button
+              variant="secondary"
+              onClick={() =>
+                openModal(
+                  'Cadastrar Técnico',
+                  [
+                    { label: 'Nome', type: 'text', name: 'nome' },
+                    { label: 'E-mail', type: 'email', name: 'email' },
+                  ],
+                  handleSubmitTécnico,
+                  'tecnico',
+                )
+              }
+            >
+              Cadastrar Técnico
+            </Button>
 
-          <Button
-            variant="secondary"
-            onClick={() =>
-              openModal(
-                'Cadastrar Serviço',
-                [
-                  { label: 'Nome', type: 'text', name: 'nome' },
-                  { label: 'Descrição', type: 'text', name: 'descricao' },
-                  { label: 'Preço Base', type: 'number', name: 'precoBase' },
-                ],
-                handleSubmitServiço,
-                'servico',
-              )
-            }
-          >
-            Cadastrar Serviço
-          </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                openModal(
+                  'Cadastrar Serviço',
+                  [
+                    { label: 'Nome', type: 'text', name: 'nome' },
+                    { label: 'Descrição', type: 'text', name: 'descricao' },
+                    { label: 'Preço Base', type: 'number', name: 'precoBase' },
+                  ],
+                  handleSubmitServiço,
+                  'servico',
+                )
+              }
+            >
+              Cadastrar Serviço
+            </Button>
 
-          <Button
-            variant="secondary"
-            onClick={() =>
-              openModal(
-                'Cadastrar Cliente',
-                [
-                  { label: 'Nome', type: 'text', name: 'nome' },
-                  { label: 'Telefone', type: 'text', name: 'telefone' },
-                  { label: 'E-mail', type: 'email', name: 'email' },
-                  { label: 'Endereço', type: 'text', name: 'endereco' },
-                ],
-                handleSubmitCliente,
-                'cliente',
-              )
-            }
-          >
-            Cadastrar Cliente
-          </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                openModal(
+                  'Cadastrar Cliente',
+                  [
+                    { label: 'Nome', type: 'text', name: 'nome' },
+                    { label: 'Telefone', type: 'text', name: 'telefone' },
+                    { label: 'E-mail', type: 'email', name: 'email' },
+                    { label: 'Endereço', type: 'text', name: 'endereco' },
+                  ],
+                  handleSubmitCliente,
+                  'cliente',
+                )
+              }
+            >
+              Cadastrar Cliente
+            </Button>
 
-          {/* Modal Genérico */}
-          <GenericModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            title={modalTitle}
-            fields={fields}
-            onSubmit={(data) => submitData(data)}
-            dataList={dataList}
-          />
-        </div>
+            {/* Modal Genérico */}
+            <GenericModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              title={modalTitle}
+              fields={fields}
+              onSubmit={(data) => submitData(data)}
+              dataList={dataList}
+            />
+          </div>
+        )}
 
         <Card className="p-4">
           <ListaOS />
         </Card>
-
-        <Button
-          onClick={handleCriarOS}
-          className="fixed bottom-6 right-6 bg-orange hover:bg-orange/80 rounded-full p-4 shadow-lg"
-        >
-          <Plus className="w-6 h-6" />
-        </Button>
+        {!isTecnico && (
+          <Button
+            onClick={handleCriarOS}
+            className="fixed bottom-6 right-6 bg-orange hover:bg-orange/80 rounded-full p-4 shadow-lg"
+          >
+            <Plus className="w-6 h-6" />
+          </Button>
+        )}
       </div>
     </div>
   );
