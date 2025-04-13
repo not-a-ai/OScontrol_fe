@@ -21,6 +21,9 @@ const Header = () => {
     navigate('/');
   };
 
+  if (isLoading) {
+    return null;
+  }
   return (
     <header className="bg-blue text-white p-4 flex items-center justify-between shadow-md">
       <div className="flex items-center gap-3">

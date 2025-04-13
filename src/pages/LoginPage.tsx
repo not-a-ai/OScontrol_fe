@@ -1,6 +1,17 @@
-import { login } from '@/services/authService';
+import { useUser } from '@/services/UserContext';
+import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+type LoginResponse = {
+  token: string;
+  user: {
+    id: number;
+    nome: string;
+    email: string;
+    tipo: string;
+  };
+};
 
 function Login() {
   const [email, setEmail] = useState<string>('');
@@ -9,6 +20,20 @@ function Login() {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const { setUser } = useUser();
+
+  const login = async (email: string, senha: string): Promise<LoginResponse> => {
+    const response = await axios.post('http://localhost:3000/auth/login', {
+      email,
+      senha,
+    });
+    const { user, token } = response.data;
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('token', token);
+    setUser(user);
+
+    return response.data;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

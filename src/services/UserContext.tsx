@@ -8,6 +8,7 @@ interface User {
 
 interface UserContextProps {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>; // <-- Adicionado aqui
   isLoading: boolean;
 }
 
@@ -25,7 +26,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  return <UserContext.Provider value={{ user, isLoading }}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={{ user, setUser, isLoading }}>{children}</UserContext.Provider>
+  );
 };
 
 export const useUser = () => {
