@@ -26,11 +26,11 @@ interface Cliente {
   email: string;
 }
 
-// interface Servico {
-//   nome: string;
-//   id: number;
-//   quantidade: number;
-// }
+interface Servico {
+  nome: string;
+  id: number;
+  quantidade: number;
+}
 
 interface Tecnico {
   id: number;
@@ -38,11 +38,11 @@ interface Tecnico {
   email: string;
 }
 
-// interface SelectedService {
-//   id: number;
-//   nome: string;
-//   quantidade: number;
-// }
+interface SelectedService {
+  id: number;
+  nome: string;
+  quantidade: number;
+}
 
 const CreateOrEditOS = () => {
   const navigate = useNavigate();
@@ -60,30 +60,26 @@ const CreateOrEditOS = () => {
   const [clienteSelecionado, setClienteSelecionado] = useState('');
   const [tecnico, setTecnico] = useState<number | null>(null);
   const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
-  // const [searchTerm, setSearchTerm] = useState('');
-  // const [services, setServices] = useState<Servico[]>([]);
-  // const [filteredServices, setFilteredServices] = useState<Servico[]>([]);
-  // const [servicesList, setServicesList] = useState<SelectedService[]>([
-  //   { id: 1, nome: 'Serviço A', quantidade: 0 },
-  //   { id: 2, nome: 'Serviço B', quantidade: 0 },
-  //   { id: 3, nome: 'Serviço C', quantidade: 0 },
-  // ]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [services, setServices] = useState<Servico[]>([]);
+  const [filteredServices, setFilteredServices] = useState<Servico[]>([]);
+  const [servicesList, setServicesList] = useState<SelectedService[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Buscar serviços
-  // const fetchServices = async () => {
-  //   try {
-  //     const response = await axios.get('http://localhost:3000/servicos', {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     setServices(response.data);
-  //     setFilteredServices(response.data);
-  //   } catch (error) {
-  //     console.error('Erro ao buscar serviços:', error);
-  //   }
-  // };
+  const fetchServices = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/servico', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setServices(response.data);
+      setFilteredServices(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar serviços:', error);
+    }
+  };
 
   // Buscar técnicos
   const fetchTecnicos = async () => {
@@ -99,44 +95,52 @@ const CreateOrEditOS = () => {
     }
   };
 
-  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const term = e.target.value;
-  //   setSearchTerm(term);
-  //   setFilteredServices(
-  //     services.filter((service) => service.nome.toLowerCase().includes(term.toLowerCase())),
-  //   );
-  // };
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    setFilteredServices(
+      services.filter((service) => service.nome.toLowerCase().includes(term.toLowerCase())),
+    );
+  };
 
-  // const handleSelectService = (service: Servico) => {
-  //   setServicesList((prev) => {
-  //     const existingService = prev.find((s) => s.id === service.id);
+  const handleSelectService = (service: Servico) => {
+    setServicesList((prev) => {
+      const existingService = prev.find((s) => s.id === service.id);
 
-  //     if (existingService) {
-  //       return prev.map((s) => (s.id === service.id ? { ...s, quantidade: s.quantidade + 1 } : s));
-  //     }
+      if (existingService) {
+        return prev.map((s) => (s.id === service.id ? { ...s, quantidade: s.quantidade + 1 } : s));
+      }
 
-  //     return [...prev, { serviceId: service.id, id: service.id, quantidade: 1 }];
-  //   });
-  // };
+      return [
+        ...prev,
+        {
+          serviceId: service.id,
+          id: service.id,
+          nome: service.nome,
+          quantidade: 1,
+        },
+      ];
+    });
+  };
 
-  // const handleRemoveService = (serviceId: number) => {
-  //   setServicesList(
-  //     (prev) => prev.filter((service) => service.id !== serviceId), // Remove da lista
-  //   );
-  // };
+  const handleRemoveService = (serviceId: number) => {
+    setServicesList(
+      (prev) => prev.filter((service) => service.id !== serviceId), // Remove da lista
+    );
+  };
 
-  // const handleUpdateQuantity = (serviceId: number, newQuantity: number) => {
-  //   setServicesList(
-  //     (prev) =>
-  //       prev
-  //         .map((service) =>
-  //           service.id === serviceId
-  //             ? { ...service, quantidade: newQuantity } // Atualiza a quantidade
-  //             : service,
-  //         )
-  //         .filter((service) => service.quantidade > 0), // Remove serviços com quantidade 0
-  //   );
-  // };
+  const handleUpdateQuantity = (serviceId: number, newQuantity: number) => {
+    setServicesList(
+      (prev) =>
+        prev
+          .map((service) =>
+            service.id === serviceId
+              ? { ...service, quantidade: newQuantity } // Atualiza a quantidade
+              : service,
+          )
+          .filter((service) => service.quantidade > 0), // Remove serviços com quantidade 0
+    );
+  };
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -198,7 +202,7 @@ const CreateOrEditOS = () => {
         setClientes(clientesResponse.data);
 
         // Buscar serviços
-        // await fetchServices();
+        await fetchServices();
 
         // Buscar técnicos
         await fetchTecnicos();
@@ -221,14 +225,14 @@ const CreateOrEditOS = () => {
           setFinalValue(osData.valor_final || '');
 
           // Carregar serviços da OS
-          // if (osData.servicos && osData.servicos.length > 0) {
-          //   setServicesList(
-          //     osData.servicos.map((s: Servico) => ({
-          //       id: s.id,
-          //       quantity: s.quantidade,
-          //     })),
-          //   );
-          // }
+          if (osData.servicos && osData.servicos.length > 0) {
+            setServicesList(
+              osData.servicos.map((s: Servico) => ({
+                id: s.id,
+                quantity: s.quantidade,
+              })),
+            );
+          }
         }
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
@@ -333,7 +337,7 @@ const CreateOrEditOS = () => {
               </PopoverContent>
             </Popover>
           </div>
-          {/* Serviços Prestados
+          {/* Serviços Prestados*/}
           <div className="mb-4">
             <Label htmlFor="service-search">Buscar Serviço</Label>
             <Input
@@ -357,7 +361,7 @@ const CreateOrEditOS = () => {
             </div>
 
             {/* Lista de serviços selecionados */}
-          {/* <div className="mt-4">
+            <div className="mt-4">
               {servicesList.length > 0 && (
                 <div>
                   <h2 className="text-lg font-bold mb-2">Serviços Selecionados</h2>
@@ -365,12 +369,12 @@ const CreateOrEditOS = () => {
                   {servicesList.map((service) => (
                     <div key={service.id} className="flex items-center gap-4 p-2 border-b">
                       {/* Nome do serviço */}
-          {/* <span className="flex-1">
+                      <span className="flex-1">
                         {services.find((s) => s.id === service.id)?.nome}
-                      </span> */}
+                      </span>
 
-          {/* Botão de diminuir quantidade */}
-          {/* <button
+                      {/* Botão de diminuir quantidade */}
+                      <button
                         onClick={() => handleUpdateQuantity(service.id, service.quantidade - 1)}
                         disabled={service.quantidade <= 1}
                         className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
@@ -378,8 +382,8 @@ const CreateOrEditOS = () => {
                         -
                       </button>
 
-                      Campo de entrada para editar quantidade */}
-          {/* <input
+                      {/* Campo de entrada para editar quantidade */}
+                      <input
                         type="number"
                         min="1"
                         value={service.quantidade}
@@ -388,7 +392,7 @@ const CreateOrEditOS = () => {
                       />
 
                       {/* Botão de aumentar quantidade */}
-          {/* <button
+                      <button
                         onClick={() => handleUpdateQuantity(service.id, service.quantidade + 1)}
                         className="px-2 py-1 bg-gray-200 rounded"
                       >
@@ -396,7 +400,7 @@ const CreateOrEditOS = () => {
                       </button>
 
                       {/* Botão de remover serviço */}
-          {/* <button
+                      <button
                         onClick={() => handleRemoveService(service.id)}
                         className="px-3 py-1 bg-red-500 text-white rounded"
                       >
@@ -407,7 +411,7 @@ const CreateOrEditOS = () => {
                 </div>
               )}
             </div>
-          </div> */}
+          </div>
           {/* Cliente */}
           <div className="mb-4">
             <Label htmlFor="client">Cliente</Label>

@@ -231,7 +231,7 @@ const ListaOS = () => {
                 {selectedOrder.valor_final ? `R$${selectedOrder.valor_final}` : 'Não definido'}
               </p>
               {/* Lista de Atendimentos */}
-              {selectedOrder.atendimentos ? (
+              {selectedOrder.atendimentos.length ? (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold">Atendimentos</h3>
                   <ul className="mt-2 space-y-2">
